@@ -25,79 +25,13 @@ function find() { // EXERCISE A
  .orderBy('sc.scheme_id')
 }
 
-async function findBySchemeID(id){
-  return db('schemes').where('scheme_id', id);
-}
+
 async function findById(scheme_id) { // EXERCISE B
-  /*
-    1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
-
-      SELECT
-          sc.scheme_name,
-          st.*
-      FROM schemes as sc
-      LEFT JOIN steps as st
-          ON sc.scheme_id = st.scheme_id
-      WHERE sc.scheme_id = 1
-      ORDER BY st.step_number ASC;
-
-    2B- When you have a grasp on the query go ahead and build it in Knex
-    making it parametric: instead of a literal `1` you should use `scheme_id`.
-
-    3B- Test in Postman and see that the resulting data does not look like a scheme,
-    but more like an array of steps each including scheme information:
-
-      [
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 2,
-          "step_number": 1,
-          "instructions": "solve prime number theory"
-        },
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 1,
-          "step_number": 2,
-          "instructions": "crack cyber security"
-        },
-        // etc
-      ]
-
-    4B- Using the array obtained and vanilla JavaScript, create an object with
-    the structure below, for the case _when steps exist_ for a given `scheme_id`:
-
-      {
-        "scheme_id": 1,
-        "scheme_name": "World Domination",
-        "steps": [
-          {
-            "step_id": 2,
-            "step_number": 1,
-            "instructions": "solve prime number theory"
-          },
-          {
-            "step_id": 1,
-            "step_number": 2,
-            "instructions": "crack cyber security"
-          },
-          // etc
-        ]
-      }
-
-    5B- This is what the result should look like _if there are no steps_ for a `scheme_id`:
-
-      {
-        "scheme_id": 7,
-        "scheme_name": "Have Fun!",
-        "steps": []
-      }
-  */
-      const result = await db('schemes')
-      .leftJoin('steps', 'schemes.scheme_id', 'steps.scheme_id')
-      .where({'schemes.scheme_id': scheme_id})
-      .select('schemes.scheme_id as scheme_id', 'scheme_name', 'step_id', 'step_number', 'instructions')
+  
+     const result = await db('schemes as sc')
+      .leftJoin('steps as st', 'sc.scheme_id', 'st.scheme_id')
+      .where({'sc.scheme_id': scheme_id})
+      .select('sc.scheme_id as scheme_id', 'scheme_name', 'step_id', 'step_number', 'instructions')
       .orderBy('step_number')
       if (result.length == 0){
         return null
@@ -106,50 +40,19 @@ async function findById(scheme_id) { // EXERCISE B
         const schemeSteps = {
           scheme_id: result[0].scheme_id, 
           scheme_name: result[0].scheme_name,
-          steps: result.filter(e => e.steps_id != null).map(e => ([{step_id: e.step_id, step_number: e.step_number, instructions: e.instructions}])
+          steps: result.filter(e => e.steps_id != null).map(e => ({step_id: e.step_id, step_number: e.step_number, instructions: e.instructions})
           )
         }
         return schemeSteps;
 }
 
-async function findSteps(scheme_id) { // EXERCISE C
-  /*
-    1C- Build a query in Knex that returns the following data.
-    The steps should be sorted by step_number, and the array
-    should be empty if there are no steps for the scheme:
-
-      [
-        {
-          "step_id": 5,
-          "step_number": 1,
-          "instructions": "collect all the sheep in Scotland",
-          "scheme_name": "Get Rich Quick"
-        },
-        {
-          "step_id": 4,
-          "step_number": 2,
-          "instructions": "profit",
-          "scheme_name": "Get Rich Quick"
-        }
-      ]
-  */
-//  select step_id, step_number, instructions, scheme_name 
-// from schemes inner join steps on schemes.scheme_id = steps.scheme_id 
+function findSteps(scheme_id) { // EXERCISE C
+  // from steps join schemes on schemes.scheme_id = steps.scheme_id 
 // order by step_number
-      const result = await db('schemes')
-      .leftJoin('steps', 'schemes.scheme_id', 'steps.scheme_id')
-      .where({'schemes.scheme_id': scheme_id})
+      return db('steps').join('schemes', 'steps.scheme_id', 'schemes.scheme_id')
+      .where('steps.scheme_id', scheme_id)
       .select('step_id', 'step_number', 'instructions', 'scheme_name')
       .orderBy('step_number')
-      if (result.length == 0){
-        return null
-      }
-     
-        const schemeSteps = {
-          posts: result.filter(e => e.steps_id != null).map(e => ({step_id: e.step_id, step_number: e.step_number, instructions: e.instructions, scheme_name: e.scheme_name})
-          )
-        }
-        return schemeSteps;
 }
         
 
@@ -180,6 +83,5 @@ module.exports = {
   findById,
   findSteps,
   add,
-  addStep,
-  findBySchemeID
+  addStep
 }
