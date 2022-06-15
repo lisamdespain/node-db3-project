@@ -48,7 +48,7 @@ const validateScheme = (req, res, next) => {
 */
 const validateStep = (req, res, next) => {
   const {instructions, step_number} = req.body
-  if (instructions == null || instructions == "" || instructions.valueOf() !== 'string' ||  step_number.valueOf() !== 'number' || step_number < 1){
+  if (instructions == null || instructions == "" || typeof instructions !== 'string' || typeof step_number !== 'number' || step_number < 1){
     res.status(400).json({message: 'invalid step'})
     return;
   }

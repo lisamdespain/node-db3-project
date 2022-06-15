@@ -37,10 +37,10 @@ async function findById(scheme_id) { // EXERCISE B
         return null
       }
      
-        const schemeSteps = {
+      const schemeSteps = {
           scheme_id: result[0].scheme_id, 
           scheme_name: result[0].scheme_name,
-          steps: result.filter(e => e.steps_id != null).map(e => ({step_id: e.step_id, step_number: e.step_number, instructions: e.instructions})
+          steps: result.filter(e => e.step_id != null).map(e => ({step_id: e.step_id, step_number: e.step_number, instructions: e.instructions})
           )
         }
         return schemeSteps;
@@ -66,16 +66,14 @@ function add(scheme) { // EXERCISE D
   })
 }
 
-function addStep(scheme_id, step) { // EXERCISE E
+async function addStep(scheme_id, step) { // EXERCISE E
   /*
     1E- This function adds a step to the scheme with the given `scheme_id`
     and resolves to _all the steps_ belonging to the given `scheme_id`,
     including the newly created one.
   */
- return db('steps').insert(step).where({'steps.scheme_id': scheme_id})
- .then(([id])=>{
-  return findById(id)
- })
+ const newStep = await db('steps').insert(step).where(scheme_id)
+ return findById(newStep.scheme_id)
 }
 
 module.exports = {
